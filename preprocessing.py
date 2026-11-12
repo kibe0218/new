@@ -10,7 +10,6 @@ DATA_DIR = BASE_DIR / "data"
 INPUT_FILE = DATA_DIR / "temperature_data.csv"
 OUTPUT_FILE = DATA_DIR / "processed_data.csv"
 
-
 # 📊 必要な列
 REQUIRED_COLUMNS = [
     "timestamp",
@@ -20,7 +19,6 @@ REQUIRED_COLUMNS = [
 
 
 def load_data():
-    """生データを読み込む"""
 
     print("🟡 CSVファイルを読み込み中...")
 
@@ -30,8 +28,6 @@ def load_data():
         )
 
     df = pd.read_csv(INPUT_FILE)
-
-    print(f"🟡 読み込み件数: {len(df)}")
 
     # 🔍 必要な列が存在するか確認
     missing_columns = [
@@ -48,7 +44,6 @@ def load_data():
 
 
 def clean_data(df):
-    """データの形式を整え、欠損値を処理する"""
 
     print("🟡 データを整理中...")
 
@@ -72,15 +67,11 @@ def clean_data(df):
 
     # 🔍 欠損値を含む行を削除
     before_count = len(df)
-
     df = df.dropna(
         subset=REQUIRED_COLUMNS
     ).copy()
-
     removed_count = before_count - len(df)
-
     print(f"🟡 欠損・変換不能データの削除: {removed_count}件")
-
     # 🕒 時刻順に並べ替え
     df = df.sort_values("timestamp").reset_index(drop=True)
 
@@ -151,11 +142,7 @@ def main():
 
     # 💾 CSV保存
     df.to_csv(OUTPUT_FILE, index=False)
-
-    print("🟢 前処理完了！")
-    print(f"🟢 保存先: {OUTPUT_FILE}")
     print(f"🟢 最終データ件数: {len(df)}")
-
     print("\n🟡 作成したデータの先頭5件")
     print(df.head())
 

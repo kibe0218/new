@@ -10,7 +10,7 @@ DATA_DIR.mkdir(exist_ok=True)
 API_URL = "http://192.168.10.114:8080/sensor"
 
 
-COUNT = 10000
+COUNT = 14400
 
 SENSOR_MAPPING = {
     "thermistor_outside": "outside_temp",
