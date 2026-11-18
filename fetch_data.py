@@ -58,8 +58,7 @@ def convert_data(data):
 
     df = df.sort_values("timestamp").reset_index(drop=True)
     return df
-
-
+    
 def main():
     data = fetch_temperature_data()
     if data is None:
