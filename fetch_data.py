@@ -14,8 +14,14 @@ LIMIT = 10
 AFTER_ID = 1000
 
 SENSOR_MAPPING = {
-    "thermistor_outside": "outside_temp",
-    "thermistor_inside": "inside_temp"
+    "thermistor_outside": {
+        "value": "outside_temp", 
+        "id": "outside_id" 
+    },
+    "thermistor_inside": {
+        "value": "inside_temp",
+        "id": "inside_id"
+    }
 }
 
 
@@ -47,15 +53,24 @@ def convert_data(data):
     records = {}
 
     for item in data:
+        data_id = item["id"]
         sensor_name = item["sensor"]
         if sensor_name not in SENSOR_MAPPING:
             continue
         timestamp = item["timestamp"]
-        column = SENSOR_MAPPING[sensor_name]
+        column = SENSOR_MAPPING[sensor_name]["value"]
+        id_column = SENSOR_MAPPING[sensor_name]["id"]
         if timestamp not in records:
-            records[timestamp] = {"timestamp": timestamp}
-
+            records[timestamp] = {
+                "timestamp": timestamp,
+                "outside_temp": None,
+                "inside_temp": None,
+                "outside_id": None,
+                "inside_id": None
+            }
         records[timestamp][column] = item["value"]
+        records[timestamp][id_column] = data_id
+
 
     df = pd.DataFrame(records.values()) #DataFrame型に変換
     if df.empty:
