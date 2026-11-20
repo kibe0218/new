@@ -7,10 +7,11 @@ DATA_DIR = BASE_DIR / "data"
 
 DATA_DIR.mkdir(exist_ok=True)
 
-API_URL = "http://192.168.10.114:8080/sensor"
+API_URL = "http://192.168.10.114:8080/api/v2"
 
 
-COUNT = 14400
+LIMIT = 10
+AFTER_ID = 1000
 
 SENSOR_MAPPING = {
     "thermistor_outside": "outside_temp",
@@ -23,9 +24,14 @@ def fetch_temperature_data():
     try:
         response = requests.get(
             API_URL,
-            params={"count": COUNT},
+        params={
+            "limit": LIMIT,
+            "after_id": AFTER_ID
+            },
             timeout=10 # 10秒以内に応答がなければタイムアウト
         )
+        print("🟡 Request URL:", response.url)
+        print("🟡 Status Code:", response.status_code)
         response.raise_for_status() # 成功したか確認
         data = response.json()
         print(f"🟢 {len(data)}件取得成功")
