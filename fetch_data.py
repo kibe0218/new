@@ -11,7 +11,7 @@ API_URL = "http://192.168.10.114:8080/api/v2"
 
 
 LIMIT = 10
-AFTER_ID = 1000
+AFTER_ID = 9632
 
 SENSOR_MAPPING = {
     "thermistor_outside": {
@@ -79,7 +79,13 @@ def convert_data(data):
 
     df = df.sort_values("timestamp").reset_index(drop=True)
     return df
-    
+
+def save_csv(df):
+    filename = DATA_DIR / "temperature_data.csv"
+    df.to_csv(filename, index=False)
+    print("🟢 CSV保存完了:", filename)
+    print(df.tail())
+
 def main():
     data = fetch_temperature_data()
     if data is None:
@@ -89,10 +95,7 @@ def main():
     if df.empty:
         return
 
-    filename = DATA_DIR / "temperature_data.csv"
-    df.to_csv(filename, index=False)
-    print("🟢 CSV保存完了:", filename)
-    print(df.tail())
+    save_csv(df)
 
 if __name__ == "__main__":
     main()
