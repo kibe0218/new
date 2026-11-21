@@ -24,7 +24,7 @@ SENSOR_MAPPING = {
     }
 }
 
-
+## データ単一取得関数
 def fetch_temperature_data(after_id):
     print("🟡 API接続中...")
     try:
@@ -41,7 +41,6 @@ def fetch_temperature_data(after_id):
         response.raise_for_status() # 成功したか確認
         data = response.json()
         if data is None:
-            print("🔴 データが取得できませんでした")
             data = []
         print(f"🟢 {len(data)}件取得成功")
         return data
@@ -50,6 +49,7 @@ def fetch_temperature_data(after_id):
         print("🔴 API接続エラー:", e)
         return None
 
+## データ全取得関数
 def fetch_all_temperature_data(after_id):
     all_data = []
     while True:
@@ -64,6 +64,7 @@ def fetch_all_temperature_data(after_id):
             break
     return all_data
 
+## データ変換関数
 def convert_data(data):
 
     records = {}
@@ -96,6 +97,7 @@ def convert_data(data):
     df = df.sort_values("timestamp").reset_index(drop=True)
     return df
 
+## データ保存関数
 def save_csv(df):
     csv_path = DATA_DIR / "temperature_data.csv"
     if not df.empty:
@@ -110,6 +112,7 @@ def save_csv(df):
         print("🟡 保存するデータがありません")
     print(df.tail())
 
+## id取得関数
 def load_last_id():
     if not STATE_FILE.exists():
         return 1000
@@ -117,6 +120,7 @@ def load_last_id():
         state = json.load(f)
     return state["after_id"]
 
+## id保存関数
 def save_last_id(last_id):
     with open(STATE_FILE, "w") as f:
         json.dump({"after_id": last_id}, f, indent=4)
