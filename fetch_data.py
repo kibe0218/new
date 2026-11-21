@@ -9,7 +9,7 @@ STATE_FILE = DATA_DIR / "last_id.json"
 
 DATA_DIR.mkdir(exist_ok=True)
 
-API_URL = "http://192.168.10.114:8080/api/v2"
+API_URL = "http://localhost:8080/api/v2"
 
 LIMIT = 10000
 
@@ -40,6 +40,9 @@ def fetch_temperature_data(after_id):
         print("🟡 Status Code:", response.status_code)
         response.raise_for_status() # 成功したか確認
         data = response.json()
+        if data is None:
+            print("🔴 データが取得できませんでした")
+            data = []
         print(f"🟢 {len(data)}件取得成功")
         return data
     
@@ -121,16 +124,21 @@ def save_last_id(last_id):
 def main():
     after_id = load_last_id()
     print(f"🟡 前回の取得位置: {after_id}")
-    data = fetch_temperature_data(after_id)
-    if not data :
+
+    data = fetch_all_temperature_data(after_id)
+    if data is None:
+        print("🔴 データ取得に失敗しました")
+        return
+    elif len(data) == 0:
         print("🟡 新しいデーターはありません")
         return
-    latest_id = max(item["id"] for item in data)
-    print(f"🟡latest id: {latest_id}")
-    df = convert_data(data)
+    
 
+    df = convert_data(data)
     if df.empty:
         return
+
+    latest_id = max(item["id"] for item in data)
 
     save_csv(df)
 
