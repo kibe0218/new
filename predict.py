@@ -24,7 +24,7 @@ START_TIME = pd.Timestamp(
     "2026-11-12 16:45:00",
     tz="Asia/Tokyo"
 )
-あ
+
 END_TIME = pd.Timestamp(
     "2026-11-12 17:00:00",
     tz="Asia/Tokyo"

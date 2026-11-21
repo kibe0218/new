@@ -1,22 +1,22 @@
 import requests
 import pandas as pd
 from pathlib import Path
+import json
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
+STATE_FILE = DATA_DIR / "last_id.json"
 
 DATA_DIR.mkdir(exist_ok=True)
 
 API_URL = "http://192.168.10.114:8080/api/v2"
 
-
-LIMIT = 10
-AFTER_ID = 9632
+LIMIT = 10000
 
 SENSOR_MAPPING = {
     "thermistor_outside": {
         "value": "outside_temp", 
-        "id": "outside_id" 
+        "id": "outside_id"
     },
     "thermistor_inside": {
         "value": "inside_temp",
@@ -25,14 +25,14 @@ SENSOR_MAPPING = {
 }
 
 
-def fetch_temperature_data():
+def fetch_temperature_data(after_id):
     print("🟡 API接続中...")
     try:
         response = requests.get(
             API_URL,
-        params={
-            "limit": LIMIT,
-            "after_id": AFTER_ID
+            params={
+                "limit": LIMIT,
+                "after_id": after_id
             },
             timeout=10 # 10秒以内に応答がなければタイムアウト
         )
@@ -47,6 +47,19 @@ def fetch_temperature_data():
         print("🔴 API接続エラー:", e)
         return None
 
+def fetch_all_temperature_data(after_id):
+    all_data = []
+    while True:
+        data = fetch_temperature_data(after_id)
+        if data is None:
+            return None
+        if len(data) == 0:
+            break
+        all_data.extend(data)
+        after_id = max(item["id"] for item in data)
+        if len(data) < LIMIT:
+            break
+    return all_data
 
 def convert_data(data):
 
@@ -81,21 +94,49 @@ def convert_data(data):
     return df
 
 def save_csv(df):
-    filename = DATA_DIR / "temperature_data.csv"
-    df.to_csv(filename, index=False)
-    print("🟢 CSV保存完了:", filename)
+    csv_path = DATA_DIR / "temperature_data.csv"
+    if not df.empty:
+        df.to_csv(
+            csv_path,
+            mode="a",
+            header=not csv_path.exists(),
+            index=False
+        )
+        print("🟢 CSVへの保存が完了しました")
+    else:
+        print("🟡 保存するデータがありません")
     print(df.tail())
 
-def main():
-    data = fetch_temperature_data()
-    if data is None:
-        return
+def load_last_id():
+    if not STATE_FILE.exists():
+        return 1000
+    with open(STATE_FILE, "r") as f:
+        state = json.load(f)
+    return state["after_id"]
 
+def save_last_id(last_id):
+    with open(STATE_FILE, "w") as f:
+        json.dump({"after_id": last_id}, f, indent=4)
+
+def main():
+    after_id = load_last_id()
+    print(f"🟡 前回の取得位置: {after_id}")
+    data = fetch_temperature_data(after_id)
+    if not data :
+        print("🟡 新しいデーターはありません")
+        return
+    latest_id = max(item["id"] for item in data)
+    print(f"🟡latest id: {latest_id}")
     df = convert_data(data)
+
     if df.empty:
         return
 
     save_csv(df)
+
+    save_last_id(latest_id)
+
+    print(f"🟡 取得位置を{latest_id}に更新しました")
 
 if __name__ == "__main__":
     main()
